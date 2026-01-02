@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "469251611216",
+    "project_id": "tourcalculator-22b91",
+    "storage_bucket": "tourcalculator-22b91.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:469251611216:android:36d117e07e185b60580f55",
+        "android_client_info": {
+          "package_name": "com.example.tour_cost_calculator"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAEi1qJdchT7EeYlC2IVh8-iv5bPQRlHqo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
