@@ -15,6 +15,15 @@ class DatabaseService {
       'timestamp': FieldValue.serverTimestamp(),
     });
   }
+  // Add a new member to an existing tour
+  Future<void> addMemberToRunningTour(String tourId, String memberName) async {
+    await _db.collection('tours').doc(tourId).collection('members').add({
+      'name': memberName,
+      'role': 'member', // Default role
+      'joined_at': FieldValue.serverTimestamp(), // useful for sorting
+      'is_active': true, // Important for the "Left" feature
+    });
+  }
   Future<void> linkMemberToUser(String tourId, String memberDocId, String realUserId) async {
     // 1. Tag the specific member entry with the UID
     await _db.collection('tours').doc(tourId).collection('members').doc(memberDocId).update({

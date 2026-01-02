@@ -41,6 +41,11 @@ class _TourDetailsScreenState extends State<TourDetailsScreen> with SingleTicker
         // --- NEW: ACTION BUTTON FOR HISTORY ---
         actions: [
           IconButton(
+            icon: Icon(Icons.person_add),
+            tooltip: "Add New Member",
+            onPressed: () => _showAddMemberDialog(context),
+          ),
+          IconButton(
             icon: Icon(Icons.history), // The History Clock Icon
             tooltip: "All Transactions",
             onPressed: () {
@@ -101,9 +106,62 @@ class _TourDetailsScreenState extends State<TourDetailsScreen> with SingleTicker
       ),
     );
   }
+  // --- SHOW ADD MEMBER DIALOG ---
+  void _showAddMemberDialog(BuildContext context) {
+    final TextEditingController _nameController = TextEditingController();
 
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Add New Member"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "This person will be added to the tour immediately. They will be included in FUTURE expenses, but not past ones.",
+              style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+            ),
+            SizedBox(height: 10),
+            TextField(
+              controller: _nameController,
+              autofocus: true,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                labelText: "Member Name",
+                hintText: "e.g. Rahim",
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.person),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+              child: Text("Cancel"),
+              onPressed: () => Navigator.pop(context)
+          ),
+          ElevatedButton(
+            child: Text("Add Member"),
+            onPressed: () async {
+              String name = _nameController.text.trim();
+              if (name.isNotEmpty) {
+                // Call Database Service
+                await DatabaseService().addMemberToRunningTour(widget.tourId, name);
+
+                Navigator.pop(context);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("$name added to the tour!"))
+                );
+              }
+            },
+          )
+        ],
+      ),
+    );
+  }
   // ==========================================
-  // TAB 1: MEMBER LIST (Click = History, Menu = Access)
+  // TAB 1: MEMBER LIST (Click = History, Menu = Access/Status)
   // ==========================================
   Widget _buildDepositTab() {
     return Column(
@@ -114,6 +172,7 @@ class _TourDetailsScreenState extends State<TourDetailsScreen> with SingleTicker
                 .collection('tours')
                 .doc(widget.tourId)
                 .collection('members')
+                .orderBy('joined_at', descending: false) // Keep order consistent
                 .snapshots(),
             builder: (context, snapshot) {
               if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
@@ -124,8 +183,11 @@ class _TourDetailsScreenState extends State<TourDetailsScreen> with SingleTicker
                 itemCount: members.length,
                 itemBuilder: (context, index) {
                   var member = members[index];
-                  // Check if this member is already linked to a real user
-                  bool isLinked = (member.data() as Map).containsKey('linked_uid');
+                  var data = member.data() as Map<String, dynamic>;
+
+                  // Check status
+                  bool isLinked = data.containsKey('linked_uid');
+                  bool isActive = data['is_active'] ?? true; // Default to true if missing
 
                   return FutureBuilder<double>(
                     future: _calculateMemberTotal(member.id),
@@ -135,18 +197,36 @@ class _TourDetailsScreenState extends State<TourDetailsScreen> with SingleTicker
                           : "...";
 
                       return Card(
+                        // Grey out the card if they left
+                        color: isActive ? Colors.white : Colors.grey.shade200,
                         margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                         child: ListTile(
-                          // VISUAL: Show Checkmark if linked, otherwise Initials
+                          // VISUAL: Initials or Checkmark
                           leading: CircleAvatar(
-                            backgroundColor: isLinked ? Colors.blue.shade800 : Colors.teal,
+                            backgroundColor: isActive
+                                ? (isLinked ? Colors.blue.shade800 : Colors.teal)
+                                : Colors.grey, // Grey circle if left
                             child: isLinked
                                 ? Icon(Icons.check, color: Colors.white, size: 18)
-                                : Text(member['name'][0].toUpperCase(), style: TextStyle(color: Colors.white)),
+                                : Text(data['name'][0].toUpperCase(), style: TextStyle(color: Colors.white)),
                           ),
 
-                          title: Text(member['name'], style: TextStyle(fontWeight: FontWeight.bold)),
-                          subtitle: Text("Total Given: $totalText", style: TextStyle(color: Colors.teal, fontWeight: FontWeight.bold)),
+                          title: Row(
+                            children: [
+                              Text(
+                                  data['name'],
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      decoration: isActive ? null : TextDecoration.lineThrough, // Cross out name
+                                      color: isActive ? Colors.black : Colors.grey
+                                  )
+                              ),
+                              if (!isActive)
+                                Text(" (Left)", style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold))
+                            ],
+                          ),
+
+                          subtitle: Text("Total Given: $totalText", style: TextStyle(color: isActive ? Colors.teal : Colors.grey)),
 
                           // ACTION 1: CLICK ROW -> VIEW HISTORY
                           onTap: () {
@@ -154,26 +234,41 @@ class _TourDetailsScreenState extends State<TourDetailsScreen> with SingleTicker
                                 builder: (_) => MemberHistoryScreen(
                                   tourId: widget.tourId,
                                   memberId: member.id,
-                                  memberName: member['name'],
+                                  memberName: data['name'],
                                 )
-                            )).then((_) => setState(() {})); // Refresh when coming back
+                            )).then((_) => setState(() {}));
                           },
 
-                          // ACTION 2: 3-DOT MENU -> GRANT ACCESS ONLY
+                          // ACTION 2: MENU (Access & Status Toggle)
                           trailing: PopupMenuButton<String>(
                             icon: Icon(Icons.more_vert, color: Colors.grey),
                             onSelected: (value) {
                               if (value == 'access') {
-                                _showGrantAccessDialog(context, member.id, member['name']);
+                                _showGrantAccessDialog(context, member.id, data['name']);
+                              } else if (value == 'toggle_status') {
+                                _toggleMemberStatus(context, member.id, data['name'], isActive);
                               }
                             },
                             itemBuilder: (context) => [
                               PopupMenuItem(
                                 value: 'access',
                                 child: Row(children: [
-                                  Icon(Icons.vpn_key, size: 20, color: isLinked ? Colors.grey : Colors.blue),
+                                  Icon(Icons.vpn_key, size: 20, color: Colors.blue),
                                   SizedBox(width: 8),
-                                  Text(isLinked ? "Update User ID" : "Grant App Access")
+                                  Text(isLinked ? "Update ID" : "Grant Access")
+                                ]),
+                              ),
+                              // DYNAMIC TOGGLE BUTTON
+                              PopupMenuItem(
+                                value: 'toggle_status',
+                                child: Row(children: [
+                                  Icon(
+                                      isActive ? Icons.exit_to_app : Icons.undo,
+                                      size: 20,
+                                      color: isActive ? Colors.orange : Colors.green
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(isActive ? "Mark as Left" : "Undo (Mark Active)")
                                 ]),
                               ),
                             ],
@@ -205,6 +300,43 @@ class _TourDetailsScreenState extends State<TourDetailsScreen> with SingleTicker
     );
   }
 
+  // --- TOGGLE MEMBER STATUS (LEFT / UNDO) ---
+  void _toggleMemberStatus(BuildContext context, String memberId, String name, bool currentStatus) async {
+    // If currently active, we are marking as LEFT.
+    // If currently inactive, we are UNDOING (marking as active).
+    bool newStatus = !currentStatus;
+
+    String title = newStatus ? "Re-activate $name?" : "Mark $name as Left?";
+    String content = newStatus
+        ? "$name will be included in future expenses again."
+        : "$name will be excluded from default selections in future expenses.";
+
+    bool confirm = await showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: Text(title),
+          content: Text(content),
+          actions: [
+            TextButton(child: Text("Cancel"), onPressed: () => Navigator.pop(context, false)),
+            TextButton(child: Text("Confirm"), onPressed: () => Navigator.pop(context, true)),
+          ],
+        )
+    ) ?? false;
+
+    if (confirm) {
+      await FirebaseFirestore.instance
+          .collection('tours')
+          .doc(widget.tourId)
+          .collection('members')
+          .doc(memberId)
+          .update({'is_active': newStatus}); // Toggle the boolean
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(newStatus ? "$name is back!" : "$name marked as left."),
+        duration: Duration(seconds: 2),
+      ));
+    }
+  }
   // --- GRANT ACCESS DIALOG ---
   void _showGrantAccessDialog(BuildContext context, String memberId, String memberName) {
     TextEditingController _uidController = TextEditingController();
