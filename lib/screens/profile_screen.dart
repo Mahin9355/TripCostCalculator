@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart'; // For clipboard
+import 'login_screen.dart'; // <--- MAKE SURE TO IMPORT YOUR LOGIN SCREEN HERE
 
 class ProfileScreen extends StatelessWidget {
   final User? user = FirebaseAuth.instance.currentUser;
@@ -90,6 +91,35 @@ class ProfileScreen extends StatelessWidget {
               ],
             ),
           ),
+
+          SizedBox(height: 40),
+
+          // 4. NEW LOGOUT BUTTON
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              icon: Icon(Icons.logout),
+              label: Text("Log Out"),
+              style: OutlinedButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: 15),
+                side: BorderSide(color: Colors.red), // Red Border
+                foregroundColor: Colors.red, // Red Text & Icon
+              ),
+              onPressed: () async {
+                // 1. Sign out from Firebase
+                await FirebaseAuth.instance.signOut();
+
+                // 2. Navigate back to Login Screen & Clear History
+                Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => LoginScreen()),
+                        (route) => false // This removes all previous routes (Back button won't work)
+                );
+              },
+            ),
+          ),
+
+          // Extra bottom padding
+          SizedBox(height: 20),
         ],
       ),
     );
