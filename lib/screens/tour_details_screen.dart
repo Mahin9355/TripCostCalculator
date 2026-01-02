@@ -481,14 +481,17 @@ class _TourDetailsScreenState extends State<TourDetailsScreen> with SingleTicker
   }
 
   void _showAddDepositDialog(BuildContext context) async {
+    // 1. First, wait for the user to pick a member
     final selectedMember = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (context) => MemberSelectorDialog(tourId: widget.tourId),
     );
 
-    if (selectedMember == null) return;
+    if (selectedMember == null) return; // User cancelled selection
 
     final amountController = TextEditingController();
+
+    // 2. Show the amount input dialog
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -497,27 +500,55 @@ class _TourDetailsScreenState extends State<TourDetailsScreen> with SingleTicker
           controller: amountController,
           keyboardType: TextInputType.number,
           autofocus: true,
-          decoration: InputDecoration(labelText: "Amount", suffixText: "BDT"),
+          decoration: InputDecoration(
+            labelText: "Amount",
+            suffixText: "BDT",
+            border: OutlineInputBorder(),
+          ),
         ),
         actions: [
-          TextButton(child: Text("Cancel"), onPressed: () => Navigator.pop(context)),
+          TextButton(
+              child: Text("Cancel"),
+              onPressed: () => Navigator.pop(context)
+          ),
           ElevatedButton(
             child: Text("Save"),
-            onPressed: () async {
-              if (amountController.text.isNotEmpty) {
-                await DatabaseService().addDeposit(
+            onPressed: () { // Removed 'async' here
+              String amountText = amountController.text.trim();
+
+              if (amountText.isNotEmpty) {
+                double? amount = double.tryParse(amountText);
+                if (amount == null) return;
+
+                // --- FIX IS HERE: FIRE AND FORGET ---
+                // Do NOT use 'await'. This lets the code continue immediately.
+                DatabaseService().addDeposit(
                   widget.tourId,
                   selectedMember['id'],
-                  double.parse(amountController.text),
-                );
+                  amount,
+                ).catchError((e) {
+                  // Optional: Log error if it fails completely (rare in offline mode)
+                  print("Error adding deposit: $e");
+                });
+
+                // Close the dialog INSTANTLY
                 Navigator.pop(context);
+
+                // Optional: Show a little confirmation
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Deposit added for ${selectedMember['name']}!"),
+                      duration: Duration(seconds: 1),
+                    )
+                );
               }
             },
           )
         ],
       ),
     );
-    // Force rebuild to update the totals in the list
+
+    // 3. Update UI (Streams handle data, but this refreshes any local calculations if needed)
     setState(() {});
   }
 
