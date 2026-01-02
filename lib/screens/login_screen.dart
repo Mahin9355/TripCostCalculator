@@ -42,12 +42,18 @@ class _LoginScreenState extends State<LoginScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // Logo or Icon
-              CircleAvatar(
-                radius: 40,
-                backgroundColor: Colors.teal,
-                child: Icon(Icons.card_travel, size: 40, color: Colors.white),
+              Container(
+                //radius: 60,
+                //backgroundColor: Colors.teal,
+                child: Image.asset(
+                  'assets/logo.png',
+                  width: 180,
+                  height: 180,
+                  fit: BoxFit.contain,
+                ),
               ),
-              SizedBox(height: 20),
+
+              //SizedBox(height: 20),
               Text("Tour Manager", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.teal.shade800)),
               SizedBox(height: 40),
 
@@ -81,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.teal,
                       foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(vertical: 16)
+                      padding: EdgeInsets.only(top: 16,bottom: 16,left: 16,right: 16)
                   ),
                   onPressed: _login,
                   child: Text("LOGIN", style: TextStyle(fontSize: 16)),

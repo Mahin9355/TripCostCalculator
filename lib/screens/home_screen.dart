@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/database_service.dart';
 import 'tour_details_screen.dart';
+import 'package:intl/intl.dart';
 import 'profile_screen.dart'; // Import the new profile screen
 
 class HomeScreen extends StatefulWidget {
@@ -50,10 +51,10 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             // SPECIAL MIDDLE BUTTON STYLE
             icon: Container(
-              padding: EdgeInsets.all(10),
+              padding: EdgeInsets.all(5),
               decoration: BoxDecoration(
                   color: Colors.teal,
-                  shape: BoxShape.circle,
+                  shape: BoxShape.rectangle,
                   boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))]
               ),
               child: Icon(Icons.add, color: Colors.white),
@@ -105,9 +106,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 SizedBox(height: 10),
                 Text("No tours found.", style: TextStyle(color: Colors.grey)),
                 Text("Click + to create one.", style: TextStyle(color: Colors.grey)),
-                SizedBox(height: 20),
+                //SizedBox(height: 20),
                 // Debug Helper: Show ID so you can compare with Firestore
-                Text("Debug ID: ${user.uid}", style: TextStyle(fontSize: 10, color: Colors.grey)),
+                //Text("Debug ID: ${user.uid}", style: TextStyle(fontSize: 10, color: Colors.grey)),
               ],
             ),
           );
@@ -127,10 +128,20 @@ class _HomeScreenState extends State<HomeScreen> {
               child: ListTile(
                 leading: CircleAvatar(
                   backgroundColor: Colors.teal.shade100,
-                  child: Icon(Icons.beach_access, color: Colors.teal.shade800),
+                  child: Image.asset(
+                    'assets/location.png',
+                    width: 38,
+                    height: 38,
+                    color: Colors.teal.shade900,
+                  ),
                 ),
                 title: Text(data['tour_name'] ?? "Unnamed"),
-                subtitle: Text("Manager: ${data['manager_name'] ?? 'Unknown'}"),
+                subtitle: Text(
+                  data['created_at'] == null
+                      ? 'Unknown date'
+                      : DateFormat('d MMMM yyyy')
+                      .format((data['created_at'] as Timestamp).toDate()),
+                ),
                 trailing: Icon(Icons.arrow_forward_ios, size: 16),
                 onTap: () {
                   Navigator.push(context, MaterialPageRoute(

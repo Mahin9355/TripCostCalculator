@@ -45,6 +45,7 @@ class _TourDetailsScreenState extends State<TourDetailsScreen> with SingleTicker
             tooltip: "Add New Member",
             onPressed: () => _showAddMemberDialog(context),
           ),
+          SizedBox(width: 6,),
           IconButton(
             icon: Icon(Icons.history), // The History Clock Icon
             tooltip: "All Transactions",
@@ -60,12 +61,13 @@ class _TourDetailsScreenState extends State<TourDetailsScreen> with SingleTicker
               });
             },
           ),
+          SizedBox(width: 28,)
         ],
         // --------------------------------------
         bottom: TabBar(
           controller: _tabController,
           tabs: [
-            Tab(text: "জমা (Deposits)", icon: Icon(Icons.savings)),
+            Tab(text: "জমা (Deposits)", icon: Icon(Icons.deblur)),
             Tab(text: "খরচ (Expenses)", icon: Icon(Icons.receipt_long)),
           ],
         ),
@@ -83,24 +85,28 @@ class _TourDetailsScreenState extends State<TourDetailsScreen> with SingleTicker
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text("ট্যুর শেষ? হিসাব চেক করুন", style: TextStyle(color: Colors.grey[700])),
+            Text("ট্যুর শেষ? হিসাব চেক করুন", style: TextStyle(color: Colors.purple[700])),
             SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                icon: Icon(Icons.calculate, color: Colors.white),
-                label: Text("CALCULATE FINAL COST", style: TextStyle(color: Colors.white, fontSize: 16)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal,
-                  padding: EdgeInsets.symmetric(vertical: 15),
+            Container(
+              padding: EdgeInsets.only(right: 50,left: 50),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  icon: Icon(Icons.calculate, color: Colors.white),
+                  label: Text("CALCULATE FINAL COST", style: TextStyle(color: Colors.white, fontSize: 16)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.cyan[900],
+                    padding: EdgeInsets.symmetric(vertical: 15),
+                  ),
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(
+                        builder: (_) => CalculationScreen(tourId: widget.tourId)
+                    ));
+                  },
                 ),
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(
-                      builder: (_) => CalculationScreen(tourId: widget.tourId)
-                  ));
-                },
               ),
             ),
+            SizedBox(height: 16,)
           ],
         ),
       ),
@@ -128,7 +134,7 @@ class _TourDetailsScreenState extends State<TourDetailsScreen> with SingleTicker
               textCapitalization: TextCapitalization.words,
               decoration: InputDecoration(
                 labelText: "Member Name",
-                hintText: "e.g. Rahim",
+                //hintText: "e.g. Rahim",
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.person),
               ),
@@ -285,13 +291,13 @@ class _TourDetailsScreenState extends State<TourDetailsScreen> with SingleTicker
 
         // Add Deposit Button
         Container(
-          padding: EdgeInsets.all(16),
+          padding: EdgeInsets.only(right: 100,left: 100,top: 16,bottom: 16),
           child: SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
               icon: Icon(Icons.add),
               label: Text("নতুন জমা (+ New Deposit)"),
-              style: ElevatedButton.styleFrom(padding: EdgeInsets.all(15), backgroundColor: Colors.teal, foregroundColor: Colors.white),
+              style: ElevatedButton.styleFrom(padding: EdgeInsets.all(15), backgroundColor: Colors.cyan[700], foregroundColor: Colors.white),
               onPressed: () => _showAddDepositDialog(context),
             ),
           ),
@@ -422,13 +428,13 @@ class _TourDetailsScreenState extends State<TourDetailsScreen> with SingleTicker
           ),
         ),
         Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.only(left: 100,right: 100,top: 16,bottom: 16),
           child: SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
               icon: Icon(Icons.add),
               label: Text("নতুন খরচ (+ New Expense)"),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, foregroundColor: Colors.white, padding: EdgeInsets.all(15)),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent[200], foregroundColor: Colors.white, padding: EdgeInsets.all(15)),
               onPressed: () {
                 Navigator.push(context, MaterialPageRoute(
                     builder: (_) => AddExpenseScreen(tourId: widget.tourId)

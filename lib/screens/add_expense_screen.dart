@@ -75,7 +75,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   // THE MAIN SWITCH
                   SwitchListTile(
                     title: Text("Paid Fully by Manager (Fund)"),
-                    subtitle: Text("The total amount is taken from collected deposits."),
+                    subtitle: Text("The fund amount is taken from collected deposits."),
                     value: _isFullyPaidByFund,
                     activeColor: Colors.teal,
                     onChanged: (val) {
@@ -132,7 +132,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             Divider(),
 
             // 3. FOR WHOM?
-            Text("For Whom? (Uncheck if they didn't eat)", style: TextStyle(fontWeight: FontWeight.bold)),
+            Text("For Whom? (খরোজটি যারা বহন করবে না তাদের টিকমার্ক সরান)", style: TextStyle(fontWeight: FontWeight.bold)),
             Wrap(
               spacing: 8.0,
               children: _members.map((member) {
