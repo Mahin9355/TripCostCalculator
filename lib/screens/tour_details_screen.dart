@@ -88,7 +88,7 @@ class _TourDetailsScreenState extends State<TourDetailsScreen> with SingleTicker
             Text("ট্যুর শেষ? হিসাব চেক করুন", style: TextStyle(color: Colors.purple[700])),
             SizedBox(height: 8),
             Container(
-              padding: EdgeInsets.only(right: 50,left: 50),
+              padding: EdgeInsets.only(right: 40,left: 40),
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -291,13 +291,13 @@ class _TourDetailsScreenState extends State<TourDetailsScreen> with SingleTicker
 
         // Add Deposit Button
         Container(
-          padding: EdgeInsets.only(right: 100,left: 100,top: 16,bottom: 16),
+          padding: EdgeInsets.only(right: 80,left: 80,top: 16,bottom: 16),
           child: SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
               icon: Icon(Icons.add),
               label: Text("নতুন জমা (+ New Deposit)"),
-              style: ElevatedButton.styleFrom(padding: EdgeInsets.all(15), backgroundColor: Colors.cyan[700], foregroundColor: Colors.white),
+              style: ElevatedButton.styleFrom(padding: EdgeInsets.all(15), backgroundColor: Colors.cyan[600], foregroundColor: Colors.white),
               onPressed: () => _showAddDepositDialog(context),
             ),
           ),
@@ -428,13 +428,13 @@ class _TourDetailsScreenState extends State<TourDetailsScreen> with SingleTicker
           ),
         ),
         Padding(
-          padding: const EdgeInsets.only(left: 100,right: 100,top: 16,bottom: 16),
+          padding: const EdgeInsets.only(left: 80,right: 80,top: 16,bottom: 16),
           child: SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
               icon: Icon(Icons.add),
               label: Text("নতুন খরচ (+ New Expense)"),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent[200], foregroundColor: Colors.white, padding: EdgeInsets.all(15)),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white, padding: EdgeInsets.all(15)),
               onPressed: () {
                 Navigator.push(context, MaterialPageRoute(
                     builder: (_) => AddExpenseScreen(tourId: widget.tourId)
