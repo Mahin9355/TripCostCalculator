@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Added for User ID
 import '../services/database_service.dart';
 import '../widgets/member_selector_dialog.dart';
 import 'add_expense_screen.dart';
 import 'calculation_screen.dart';
 import 'member_history_screen.dart';
+import 'transaction_history_screen.dart'; // Make sure this file exists from previous step
 
 class TourDetailsScreen extends StatefulWidget {
   final String tourId;
@@ -36,6 +38,25 @@ class _TourDetailsScreenState extends State<TourDetailsScreen> with SingleTicker
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.tourName),
+        // --- NEW: ACTION BUTTON FOR HISTORY ---
+        actions: [
+          IconButton(
+            icon: Icon(Icons.history), // The History Clock Icon
+            tooltip: "All Transactions",
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(
+                  builder: (_) => TransactionHistoryScreen(
+                    tourId: widget.tourId,
+                    currentUserId: FirebaseAuth.instance.currentUser!.uid,
+                  )
+              )).then((_) {
+                // Refresh screen when coming back (in case something was deleted)
+                setState(() {});
+              });
+            },
+          ),
+        ],
+        // --------------------------------------
         bottom: TabBar(
           controller: _tabController,
           tabs: [
@@ -229,6 +250,7 @@ class _TourDetailsScreenState extends State<TourDetailsScreen> with SingleTicker
       ),
     );
   }
+
   // ==========================================
   // TAB 2: EXPENSES LIST
   // ==========================================
@@ -304,7 +326,6 @@ class _TourDetailsScreenState extends State<TourDetailsScreen> with SingleTicker
     }
 
     // 2. Sum Expenses (Direct Payments)
-    // Note: This fetches all expenses. For very large apps, this needs optimization.
     var expenses = await FirebaseFirestore.instance
         .collection('tours')
         .doc(widget.tourId)
